@@ -74,7 +74,7 @@ const arr =[
     </div>
 
     <div className="mt-20 text-center">
-    <Link href={"/inventory "}>
+    <Link href={"/inventory"}>
     <Button
                     borderRadius="1.75rem"
                     className="bg-white dark:bg-black text-black dark:text-white border-neutral-200 dark:border-slate-800"
