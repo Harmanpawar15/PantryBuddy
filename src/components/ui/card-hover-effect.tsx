@@ -1,20 +1,19 @@
 import { cn } from "../../utils/cn";
 import { AnimatePresence, motion } from "framer-motion";
-import Link from "next/link";
 import { useState } from "react";
 
 export const HoverEffect = ({
   items,
   className,
+  onCardClick
 }: {
   items: {
     title: string;
-    description: string; // Description should be concise
-    image: string; // Add image URL
-    ingredients: string; // Add ingredients list
+    image: string;
     link: string;
   }[];
   className?: string;
+  onCardClick: (item: { title: string; image: string; link: string }) => void;
 }) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
@@ -26,12 +25,12 @@ export const HoverEffect = ({
       )}
     >
       {items.map((item, idx) => (
-        <Link
-          href={item.link}
-          key={item.title} // Use title or a unique identifier
+        <div
+          key={item.title}
           className="relative group block p-2 h-full w-full"
           onMouseEnter={() => setHoveredIndex(idx)}
           onMouseLeave={() => setHoveredIndex(null)}
+          onClick={() => onCardClick(item)}
         >
           <AnimatePresence>
             {hoveredIndex === idx && (
@@ -53,10 +52,8 @@ export const HoverEffect = ({
           <Card>
             <CardImage src={item.image} alt={item.title} />
             <CardTitle>{item.title}</CardTitle>
-            <CardDescription>{item.description}</CardDescription>
-            <CardIngredients>{item.ingredients}</CardIngredients> {/* Display ingredients */}
           </Card>
-        </Link>
+        </div>
       ))}
     </div>
   );
@@ -69,14 +66,6 @@ const CardImage = ({ src, alt }: { src: string; alt: string }) => {
       alt={alt}
       className="w-full h-40 object-cover rounded-lg mb-4"
     />
-  );
-};
-
-const CardIngredients = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <p className="mt-4 text-zinc-400 tracking-wide text-sm">
-      <strong>Ingredients Used:</strong> {children}
-    </p>
   );
 };
 
@@ -109,27 +98,13 @@ export const CardTitle = ({
   children: React.ReactNode;
 }) => {
   return (
-    <h4 className={cn("text-zinc-100 font-bold tracking-wide mt-4", className)}>
-      {children}
-    </h4>
-  );
-};
-
-export const CardDescription = ({
-  className,
-  children,
-}: {
-  className?: string;
-  children: React.ReactNode;
-}) => {
-  return (
-    <p
+    <h3
       className={cn(
-        "mt-8 text-zinc-400 tracking-wide leading-relaxed text-sm",
+        "text-lg text-white font-semibold",
         className
       )}
     >
       {children}
-    </p>
+    </h3>
   );
 };

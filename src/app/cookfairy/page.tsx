@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState, useEffect } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../../firebase';
@@ -16,14 +17,17 @@ interface Recipe {
   recipe: {
     label: string;
     image: string;
-    ingredients: Array<{ text: string }>;
-    url: string; // Assuming there is a URL for more details
+    url: string;
   };
 }
 
 const CookFairyPage = () => {
   const [items, setItems] = useState<PantryItem[]>([]);
-  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [recipes, setRecipes] = useState<{
+    title: string;
+    image: string;
+    link: string;
+  }[]>([]);
   const [notification, setNotification] = useState<string | null>(null);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
 
@@ -57,14 +61,20 @@ const CookFairyPage = () => {
   const handleGetRecipes = async () => {
     const ingredients = items.map(item => item.name).join(', ');
     const ingredientArray = ingredients.split(',').map(ingredient => ingredient.trim());
-    const batchSize = 5; // Adjust based on API limits
+    const batchSize = 5;
 
-    let allRecipes: Recipe[] = [];
+    let allRecipes: { title: string; image: string; link: string }[] = [];
 
     for (let i = 0; i < ingredientArray.length; i += batchSize) {
       const batch = ingredientArray.slice(i, i + batchSize).join(',');
       const recipes = await fetchRecipesForBatch(batch);
-      allRecipes = allRecipes.concat(recipes);
+      allRecipes = allRecipes.concat(
+        recipes.map((hit: any) => ({
+          title: hit.recipe.label,
+          image: hit.recipe.image,
+          link: hit.recipe.url,
+        }))
+      );
     }
 
     if (allRecipes.length > 0) {
@@ -74,7 +84,14 @@ const CookFairyPage = () => {
     }
   };
 
-  const handleRecipeClick = (recipe: Recipe) => {
+  const handleCardClick = (item: { title: string; image: string; link: string }) => {
+    const recipe = {
+      recipe: {
+        label: item.title,
+        image: item.image,
+        url: item.link,
+      }
+    };
     setSelectedRecipe(recipe);
   };
 
@@ -82,27 +99,17 @@ const CookFairyPage = () => {
     setSelectedRecipe(null);
   };
 
-  // Function to get ingredients used from inventory
-  const getIngredientsUsed = "Its me i am used "
-  // const getIngredientsUsed = (recipeIngredients: Array<{ text: string }>) => {
-  //   const inventorySet = new Set(items.map(item => item.name.toLowerCase().trim()));
-  //   return recipeIngredients
-  //     .filter(ingredient => inventorySet.has(ingredient.text.toLowerCase().trim()))
-  //     .map(ingredient => ingredient.text)
-  //     .join(', ');
-  // };
-
   return (
     <div className='min-h-screen py-12 bg-gray-900'>
       <div className="p-4 relative z-10 w-full text-center">
-        <h1 className="pt-16 md:pt-20 text-5xl md:text-7xl font-bold text-neutral-50">
-          Cook Fairy AI
+        <h1 className="pt-20 md:pt-20 text-xl md:text-4xl font-bold text-neutral-50">
+          Use Cook Fairy AI: Get inspired! Discover recipes based on the ingredients you already have.
         </h1>
         <div className=' p-6 rounded-lg shadow-lg'>
           <Button
             onClick={handleGetRecipes}
             borderRadius="1.75rem"
-            className="bg-white dark:bg-black text-black dark:text-white border-neutral-200 dark:border-slate-800"
+            className="bg-white dark:bg-black text-black dark:text-white border-neutral-200 dark:border-slate-800 p-2"
           >
             Get Recipes
           </Button>
@@ -114,24 +121,17 @@ const CookFairyPage = () => {
       <div className="mx-8 mt-10">
         <div className="max-w-9xl mx-auto px-8">
           <HoverEffect
-            items={recipes.map(recipe => ({
-              title: recipe.recipe.label,
-              description: getIngredientsUsed   ,
-              // (recipe.recipe.ingredients), // Updated description
-              image: recipe.recipe.image,
-              ingredients: getIngredientsUsed,
-              //(recipe.recipe.ingredients), // Display ingredients
-              link: recipe.recipe.url,
-            }))}
+            items={recipes}
+            onCardClick={handleCardClick}
           />
         </div>
       </div>
       {selectedRecipe && (
         <div className="fixed inset-0 bg-gray-900 bg-opacity-80 flex items-center justify-center z-50">
-          <div className="bg-gray-800 p-6 rounded-lg w-11/12 max-w-4xl relative">
+          <div className="bg-gray-800 p-6 rounded-lg w-10/12 max-w-xl relative">
             <button
               onClick={closeModal}
-              className="absolute top-2 right-2 text-white bg-red-600 p-2 rounded-full"
+              className="absolute top-2 right-1 text-white bg-red-600 p-2 rounded-sm"
             >
               X
             </button>
@@ -139,12 +139,8 @@ const CookFairyPage = () => {
             <img
               src={selectedRecipe.recipe.image}
               alt={selectedRecipe.recipe.label}
-              className="w-full h-60 object-cover rounded-lg mb-4"
+              className="w-50 h-60 object-cover rounded-lg mb-4"
             />
-            <p className="text-white mb-4">
-              <strong>Ingredients Used:</strong> {getIngredientsUsed}
-              {/* //(selectedRecipe.recipe.ingredients) */}
-            </p>
             <a
               href={selectedRecipe.recipe.url}
               target="_blank"
