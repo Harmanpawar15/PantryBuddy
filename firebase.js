@@ -26,14 +26,5 @@ const firestore=getFirestore(app);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-// if (typeof window !== "undefined") {
-//   // Check if analytics is supported in this environment
-//   isSupported().then((supported) => {
-//     if (supported) {
-//       const analytics = getAnalytics(app);
-//     } else {
-//       console.log("Analytics not supported in this environment.");
-//     }
-//   });}
 
 export {firestore , db, auth, app, firebaseConfig} ;
